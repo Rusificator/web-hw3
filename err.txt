@@ -1,0 +1,1 @@
+Fatal error: Uncaught Error: Call to undefined function mb_strlen() in /home/u82457/www/hw3/index.php:59 Stack trace: #0 {main} thrown in /home/u82457/www/hw3/index.php on line 59
