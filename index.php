@@ -189,6 +189,105 @@ if (empty($languages_from_db)) {
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+
+
+        <!-- ========== Подготовительный раздел ========== -->
+        <section class="preparation">
+            <h2>Подготовка к выполнению работы</h2>
+
+            <!-- 0.PNG – инициализация Git -->
+            <div class="subtask">
+                <h3>Инициализация Git и отправка на GitHub</h3>
+                <div class="description">
+                    <p>На локальном компьютере создан репозиторий, добавлены файлы (скриншоты, index.php, style.css, bd.txt, err.txt) и выполнена отправка на GitHub.</p>
+                </div>
+                <div class="screenshot">
+                    <img src="0.PNG" alt="Git init и push">
+                    <p class="caption">Скриншот 0: Инициализация Git и push</p>
+                </div>
+            </div>
+
+            <!-- 1.PNG – подключение по SSH -->
+            <div class="subtask">
+                <h3>Подключение к учебному серверу</h3>
+                <div class="description">
+                    <p>Через SSH выполнен вход на сервер <code>192.168.199.8</code> под логином <code>u82457</code>.</p>
+                </div>
+                <div class="screenshot">
+                    <img src="1.PNG" alt="SSH подключение">
+                    <p class="caption">Скриншот 1: Подключение к серверу</p>
+                </div>
+            </div>
+
+            <!-- 2.PNG – создание каталога hw3 -->
+            <div class="subtask">
+                <h3>Создание рабочего каталога</h3>
+                <div class="description">
+                    <p>В домашней директории создан каталог <code>~/www/hw3</code>, в который будут помещены файлы лабораторной работы.</p>
+                </div>
+                <div class="screenshot">
+                    <img src="2.PNG" alt="mkdir hw3">
+                    <p class="caption">Скриншот 2: Создание каталога hw3</p>
+                </div>
+            </div>
+
+            <!-- 4.PNG – вход в MySQL -->
+            <div class="subtask">
+                <h3>Подключение к MySQL</h3>
+                <div class="description">
+                    <p>Запущен клиент MySQL для создания таблиц. Использована команда <code>mysql -u u82457 -p</code>.</p>
+                </div>
+                <div class="screenshot">
+                    <img src="4.PNG" alt="MySQL подключение">
+                    <p class="caption">Скриншот 4: Вход в MySQL</p>
+                </div>
+            </div>
+
+            <!-- 5.PNG – создание таблиц и наполнение -->
+            <div class="subtask">
+                <h3>Создание таблиц и заполнение языков</h3>
+                <div class="description">
+                    <p>Созданы три таблицы: <code>application</code>, <code>language</code>, <code>application_language</code> – в соответствии с 3-й нормальной формой. Затем таблица <code>language</code> заполнена списком языков из задания.</p>
+                </div>
+                <div class="screenshot">
+                    <img src="5.PNG" alt="SQL запросы">
+                    <p class="caption">Скриншот 5: Создание таблиц и вставка языков</p>
+                </div>
+            </div>
+
+            <!-- 6.PNG – выход из MySQL -->
+            <div class="subtask">
+                <h3>Выход из MySQL</h3>
+                <div class="description">
+                    <p>После завершения работы с базой данных выполнен выход из клиента MySQL.</p>
+                </div>
+                <div class="screenshot">
+                    <img src="6.PNG" alt="exit">
+                    <p class="caption">Скриншот 6: Выход из MySQL</p>
+                </div>
+            </div>
+
+            <!-- 7.PNG – изменение поля gender и просмотр данных -->
+            <div class="subtask">
+                <h3>Корректировка структуры и проверка сохранённых данных</h3>
+                <div class="description">
+                    <p>Выполнена выборка последних записей из таблицы <code>application</code> для проверки успешного сохранения данных.</p>
+                </div>
+                <div class="screenshot">
+                    <img src="7.PNG" alt="ALTER и SELECT">
+                    <p class="caption">Скриншот 7: Изменение структуры и просмотр записей</p>
+                </div>
+                <div class="description">
+                    <p>Для удобного просмотра всех сохранённых анкет создана отдельная страница: <a href="view.php" target="_blank">Просмотр сохранённых записей</a>.</p>
+                </div>
+
+            </div>
+        </section>
+
+
+
+
     <div class="container">
         <h1>Анкета</h1>
 

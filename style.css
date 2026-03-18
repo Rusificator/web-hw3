@@ -102,3 +102,60 @@ button:hover {
 .field-error {
     display: block;
 }
+
+/* Стили для подготовительного раздела */
+.preparation {
+    margin-bottom: 40px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+}
+
+.preparation h2 {
+    color: #2c3e50;
+    border-left: 5px solid #3498db;
+    padding-left: 15px;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.preparation .subtask {
+    margin-bottom: 30px;
+    padding-left: 15px;
+    border-left: 2px solid #ced4da;
+}
+
+.preparation .subtask h3 {
+    color: #495057;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.preparation .subtask .description {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #e9ecef;
+}
+
+.preparation .subtask .screenshot {
+    text-align: center;
+}
+
+.preparation .subtask .screenshot img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.preparation .subtask .screenshot .caption {
+    font-style: italic;
+    color: #7f8c8d;
+    margin-top: 8px;
+    font-size: 0.9em;
+}
