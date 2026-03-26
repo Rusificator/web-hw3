@@ -1,5 +1,5 @@
 <?php
-
+//ФУНКЦИЯ ПОДКЛЮЧЕНИЯ К БД 
 function getDB() {
     static $pdo = null;
     if ($pdo === null) {
@@ -17,9 +17,9 @@ function getDB() {
     return $pdo;
 }
 
-// ========== ФУНКЦИЯ ПОЛУЧЕНИЯ СПИСКА ЯЗЫКОВ ИЗ БД ==========
+// ФУНКЦИЯ ПОЛУЧЕНИЯ СПИСКА ЯЗЫКОВ ИЗ БД 
 function getLanguages() {
-    $pdo = getDB();          // теперь подключится только при первом вызове
+    $pdo = getDB();
     $stmt = $pdo->query("SELECT name FROM language ORDER BY name");
     $languages = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -28,14 +28,14 @@ function getLanguages() {
     return $languages;
 }
 
-// ========== ДОПУСТИМЫЕ ЗНАЧЕНИЯ (белые списки) ==========
+// ДОПУСТИМЫЕ ЗНАЧЕНИЯ (белые списки) 
 $allowed_languages = [
     'Pascal', 'C', 'C++', 'JavaScript', 'PHP', 'Python',
     'Java', 'Haskell', 'Clojure', 'Prolog', 'Scala', 'Go'
 ];
 $allowed_genders = ['male', 'female'];
 
-// ========== ИНИЦИАЛИЗАЦИЯ ПЕРЕМЕННЫХ ==========
+//  ИНИЦИАЛИЗАЦИЯ ПЕРЕМЕННЫХ 
 $form_data = [
     'full_name' => '', 'phone' => '', 'email' => '', 'birth_date' => '',
     'gender' => '', 'biography' => '', 'contract_accepted' => false, 'languages' => []
@@ -43,7 +43,7 @@ $form_data = [
 $errors = [];
 $success_message = '';
 
-// ========== ОБРАБОТКА POST-ЗАПРОСА (ОТПРАВКА ФОРМЫ) ==========
+// ОБРАБОТКА POST-ЗАПРОСА (ОТПРАВКА ФОРМЫ)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Заполняем $form_data из $_POST
     $form_data['full_name'] = trim($_POST['full_name'] ?? '');
@@ -122,10 +122,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['contract_accepted'] = 'Необходимо подтвердить согласие.';
     }
 
-    // ---- СОХРАНЕНИЕ В БД (только если ошибок нет) ----
+    // СОХРАНЕНИЕ В БД (только если ошибок нет)
     if (empty($errors)) {
         try {
-            $pdo = getDB();                       // подключаемся к БД только сейчас
+            $pdo = getDB();
             $pdo->beginTransaction();
 
             // Вставка в application
@@ -174,130 +174,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// ========== ПОЛУЧАЕМ ЯЗЫКИ ДЛЯ ФОРМЫ (только при GET или при ошибках POST) ==========
+// ПОЛУЧАЕМ ЯЗЫКИ ДЛЯ ФОРМЫ (только при GET или при ошибках POST)
 $languages_from_db = getLanguages();
 if (empty($languages_from_db)) {
     $languages_from_db = $allowed_languages;   // запасной список, если таблица пуста
 }
+
+// ПОДКЛЮЧАЕМ ФОРМУ
+include 'form.php';
 ?>
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Задание 3 - Анкета</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-    .nav-buttons {
-        margin-top: 30px;
-        text-align: center;
-        border-top: 1px solid #e0e0e0;
-        padding-top: 20px;
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        flex-wrap: wrap;
-}
-.nav-buttons a {
-    display: inline-block;
-    background-color: #39e704;
-    color: white;
-    text-decoration: none;
-    padding: 10px 25px;
-    border-radius: 5px;
-    font-weight: bold;
-    transition: background-color 0.2s;
-}
-.nav-buttons a:hover {
-    background-color: #2ecc71;
-}
-        </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Анкета</h1>
-
-        <?php if ($success_message): ?>
-            <div class="success"><?= htmlspecialchars($success_message) ?></div>
-        <?php endif; ?>
-
-        <?php if (!empty($errors)): ?>
-            <div class="errors">
-                <ul>
-                    <?php foreach ($errors as $error): ?>
-                        <li><?= htmlspecialchars($error) ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
-
-        <form method="post" action="">
-            <div class="form-group">
-                <label for="full_name">ФИО:</label>
-                <input type="text" id="full_name" name="full_name" value="<?= htmlspecialchars($form_data['full_name']) ?>" required>
-                <?php if (isset($errors['full_name'])): ?><span class="field-error"><?= $errors['full_name'] ?></span><?php endif; ?>
-            </div>
-
-            <div class="form-group">
-                <label for="phone">Телефон:</label>
-                <input type="tel" id="phone" name="phone" value="<?= htmlspecialchars($form_data['phone']) ?>" required>
-                <?php if (isset($errors['phone'])): ?><span class="field-error"><?= $errors['phone'] ?></span><?php endif; ?>
-            </div>
-
-            <div class="form-group">
-                <label for="email">E-mail:</label>
-                <input type="email" id="email" name="email" value="<?= htmlspecialchars($form_data['email']) ?>" required>
-                <?php if (isset($errors['email'])): ?><span class="field-error"><?= $errors['email'] ?></span><?php endif; ?>
-            </div>
-
-            <div class="form-group">
-                <label for="birth_date">Дата рождения:</label>
-                <input type="date" id="birth_date" name="birth_date" value="<?= htmlspecialchars($form_data['birth_date']) ?>" required>
-                <?php if (isset($errors['birth_date'])): ?><span class="field-error"><?= $errors['birth_date'] ?></span><?php endif; ?>
-            </div>
-
-            <div class="form-group">
-                <label>Пол:</label>
-                <div class="radio-group">
-                    <label><input type="radio" name="gender" value="male" <?= $form_data['gender'] === 'male' ? 'checked' : '' ?> required> Мужской</label>
-                    <label><input type="radio" name="gender" value="female" <?= $form_data['gender'] === 'female' ? 'checked' : '' ?>> Женский</label>
-                </div>
-                <?php if (isset($errors['gender'])): ?><span class="field-error"><?= $errors['gender'] ?></span><?php endif; ?>
-            </div>
-
-            <div class="form-group">
-                <label for="languages">Любимые языки программирования (выберите один или несколько):</label>
-                <select id="languages" name="languages[]" multiple size="6" required>
-                    <?php foreach ($languages_from_db as $lang): ?>
-                        <option value="<?= htmlspecialchars($lang) ?>" <?= in_array($lang, $form_data['languages']) ? 'selected' : '' ?>><?= htmlspecialchars($lang) ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <?php if (isset($errors['languages'])): ?><span class="field-error"><?= $errors['languages'] ?></span><?php endif; ?>
-            </div>
-
-            <div class="form-group">
-                <label for="biography">Биография:</label>
-                <textarea id="biography" name="biography" rows="6"><?= htmlspecialchars($form_data['biography']) ?></textarea>
-                <?php if (isset($errors['biography'])): ?><span class="field-error"><?= $errors['biography'] ?></span><?php endif; ?>
-            </div>
-
-            <div class="form-group checkbox">
-                <label>
-                    <input type="checkbox" name="contract_accepted" value="1" <?= $form_data['contract_accepted'] ? 'checked' : '' ?>>
-                    Я ознакомлен(а) с контрактом
-                </label>
-                <?php if (isset($errors['contract_accepted'])): ?><span class="field-error"><?= $errors['contract_accepted'] ?></span><?php endif; ?>
-            </div>
-
-            <div class="form-group">
-                <button type="submit">Сохранить</button>
-            </div>
-        </form>
-
-        <div class="nav-buttons">
-            <a href="podg.html">📖 Этапы выполнения работы</a>
-            <a href="view.php">📊 Просмотр сохранённых анкет</a>
-        </div>
-    </div>
-</body>
-</html>
