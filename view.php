@@ -1,4 +1,5 @@
 <?php
+// Настройки подключения к БД
 $db_user = 'u82457';
 $db_pass = '7777166';
 $db_name = 'u82457';
@@ -21,44 +22,41 @@ try {
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Сохранённые анкеты</title>
-    <style>
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    
 </head>
 <body>
-    <h1>Сохранённые анкеты</h1>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>ФИО</th>
-            <th>Телефон</th>
-            <th>Email</th>
-            <th>Дата рождения</th>
-            <th>Пол</th>
-            <th>Биография</th>
-            <th>Согласие</th>
-            <th>Языки</th>
-            <th>Дата создания</th>
-        </tr>
-        <?php foreach ($applications as $app): ?>
-        <tr>
-            <td><?= htmlspecialchars($app['id']) ?></td>
-            <td><?= htmlspecialchars($app['full_name']) ?></td>
-            <td><?= htmlspecialchars($app['phone']) ?></td>
-            <td><?= htmlspecialchars($app['email']) ?></td>
-            <td><?= htmlspecialchars($app['birth_date']) ?></td>
-            <td><?= htmlspecialchars($app['gender']) ?></td>
-            <td><?= nl2br(htmlspecialchars($app['biography'])) ?></td>
-            <td><?= $app['contract_accepted'] ? 'Да' : 'Нет' ?></td>
-            <td><?= htmlspecialchars($app['languages']) ?></td>
-            <td><?= htmlspecialchars($app['created_at']) ?></td>
-        </tr>
-        <?php endforeach; ?>
-    </table>
+    <div class="container">
+        <h1>Сохранённые анкеты</h1>
+        <table>
+            <thead>
+                <tr><th>ID</th><th>ФИО</th><th>Телефон</th><th>Email</th><th>Дата рождения</th><th>Пол</th><th>Биография</th><th>Согласие</th><th>Языки</th><th>Дата создания</th></tr>
+            </thead>
+            <tbody>
+                <?php foreach ($applications as $app): ?>
+                <tr>
+                    <td><?= htmlspecialchars($app['id']) ?></td>
+                    <td><?= htmlspecialchars($app['full_name']) ?></td>
+                    <td><?= htmlspecialchars($app['phone']) ?></td>
+                    <td><?= htmlspecialchars($app['email']) ?></td>
+                    <td><?= htmlspecialchars($app['birth_date']) ?></td>
+                    <td><?= $app['gender'] === 'male' ? 'Мужской' : 'Женский' ?></td>
+                    <td><?= nl2br(htmlspecialchars($app['biography'])) ?></td>
+                    <td><?= $app['contract_accepted'] ? 'Да' : 'Нет' ?></td>
+                    <td><?= htmlspecialchars($app['languages']) ?></td>
+                    <td><?= htmlspecialchars($app['created_at']) ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <div class="back-link">
+            <a href="index.php">← Вернуться к форме</a>
+        </div>
+    </div>
 </body>
 </html>

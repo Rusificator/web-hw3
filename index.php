@@ -1,43 +1,49 @@
 <?php
-// Настройки подключения к БД
-$db_host = 'localhost';
-$db_user = 'u82457';
-$db_pass = '7777166';       
-$db_name = 'u82457';
 
-// Подключение к MySQL
-try {
-    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Ошибка подключения к БД: " . $e->getMessage());
+function getDB() {
+    static $pdo = null;
+    if ($pdo === null) {
+        $db_host = 'localhost';
+        $db_user = 'u82457';
+        $db_pass = '7777166';
+        $db_name = 'u82457';
+        try {
+            $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $e) {
+            die("Ошибка подключения к БД: " . $e->getMessage());
+        }
+    }
+    return $pdo;
 }
 
-// Массив допустимых языков (для валидации)
+// ========== ФУНКЦИЯ ПОЛУЧЕНИЯ СПИСКА ЯЗЫКОВ ИЗ БД ==========
+function getLanguages() {
+    $pdo = getDB();          // теперь подключится только при первом вызове
+    $stmt = $pdo->query("SELECT name FROM language ORDER BY name");
+    $languages = [];
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $languages[] = $row['name'];
+    }
+    return $languages;
+}
+
+// ========== ДОПУСТИМЫЕ ЗНАЧЕНИЯ (белые списки) ==========
 $allowed_languages = [
     'Pascal', 'C', 'C++', 'JavaScript', 'PHP', 'Python',
     'Java', 'Haskell', 'Clojure', 'Prolog', 'Scala', 'Go'
 ];
-
-// Массив допустимых значений пола
 $allowed_genders = ['male', 'female'];
 
-// Инициализация переменных для данных формы и ошибок
+// ========== ИНИЦИАЛИЗАЦИЯ ПЕРЕМЕННЫХ ==========
 $form_data = [
-    'full_name' => '',
-    'phone' => '',
-    'email' => '',
-    'birth_date' => '',
-    'gender' => '',
-    'biography' => '',
-    'contract_accepted' => false,
-    'languages' => []
+    'full_name' => '', 'phone' => '', 'email' => '', 'birth_date' => '',
+    'gender' => '', 'biography' => '', 'contract_accepted' => false, 'languages' => []
 ];
-
 $errors = [];
 $success_message = '';
 
-// Обработка отправки формы
+// ========== ОБРАБОТКА POST-ЗАПРОСА (ОТПРАВКА ФОРМЫ) ==========
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Заполняем $form_data из $_POST
     $form_data['full_name'] = trim($_POST['full_name'] ?? '');
@@ -49,9 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $form_data['contract_accepted'] = isset($_POST['contract_accepted']);
     $form_data['languages'] = $_POST['languages'] ?? [];
 
-    // --- Валидация ---
-
-    // ФИО: только буквы, пробелы, длина ≤150
+    // ---- ВАЛИДАЦИЯ ----
+    // ФИО
     if (empty($form_data['full_name'])) {
         $errors['full_name'] = 'ФИО обязательно для заполнения.';
     } elseif (!preg_match('/^[а-яА-Яa-zA-Z\s]+$/u', $form_data['full_name'])) {
@@ -60,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['full_name'] = 'ФИО не должно превышать 150 символов.';
     }
 
-    // Телефон: допустимые символы и длина от 6 до 12
+    // Телефон
     if (empty($form_data['phone'])) {
         $errors['phone'] = 'Телефон обязателен.';
     } elseif (!preg_match('/^[\d\s\-\+\(\)]+$/', $form_data['phone'])) {
@@ -83,11 +88,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $date = DateTime::createFromFormat('Y-m-d', $form_data['birth_date']);
         if (!$date || $date->format('Y-m-d') !== $form_data['birth_date']) {
             $errors['birth_date'] = 'Некорректная дата. Используйте формат ГГГГ-ММ-ДД.';
-        } else {
-            $today = new DateTime('today');
-            if ($date > $today) {
-                $errors['birth_date'] = 'Дата рождения не может быть позже сегодняшнего дня.';
-            }
+        } elseif ($date > new DateTime('today')) {
+            $errors['birth_date'] = 'Дата рождения не может быть позже сегодняшнего дня.';
         }
     }
 
@@ -98,9 +100,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['gender'] = 'Недопустимое значение пола.';
     }
 
-    // Любимые языки (хотя бы один)
+    // Языки
     if (empty($form_data['languages'])) {
-        $errors['languages'] = 'Выберите хотя бы один язык программирования.';
+        $errors['languages'] = 'Выберите хотя бы один язык.';
     } else {
         foreach ($form_data['languages'] as $lang) {
             if (!in_array($lang, $allowed_languages)) {
@@ -110,22 +112,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Биография (необязательное поле, но можно проверить длину)
+    // Биография
     if (strlen($form_data['biography']) > 10000) {
         $errors['biography'] = 'Биография слишком длинная (макс. 10000 символов).';
     }
 
-    // Чекбокс согласия
+    // Чекбокс
     if (!$form_data['contract_accepted']) {
-        $errors['contract_accepted'] = 'Необходимо подтвердить ознакомление с контрактом.';
+        $errors['contract_accepted'] = 'Необходимо подтвердить согласие.';
     }
 
-    // Если ошибок нет, сохраняем в БД
+    // ---- СОХРАНЕНИЕ В БД (только если ошибок нет) ----
     if (empty($errors)) {
         try {
+            $pdo = getDB();                       // подключаемся к БД только сейчас
             $pdo->beginTransaction();
 
-            // 1. Вставка в таблицу application
+            // Вставка в application
             $stmt = $pdo->prepare("
                 INSERT INTO application 
                 (full_name, phone, email, birth_date, gender, biography, contract_accepted)
@@ -140,16 +143,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':biography' => $form_data['biography'],
                 ':contract_accepted' => $form_data['contract_accepted'] ? 1 : 0
             ]);
-
             $application_id = $pdo->lastInsertId();
 
-            // 2. Вставка в application_language
+            // Получаем map язык → id
             $lang_map = [];
             $stmt = $pdo->query("SELECT id, name FROM language");
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $lang_map[$row['name']] = $row['id'];
             }
 
+            // Вставка связей
             $stmt = $pdo->prepare("INSERT INTO application_language (application_id, language_id) VALUES (?, ?)");
             foreach ($form_data['languages'] as $lang_name) {
                 if (isset($lang_map[$lang_name])) {
@@ -159,26 +162,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $pdo->commit();
             $success_message = 'Данные успешно сохранены!';
-            // Очищаем данные формы
+            // Очищаем форму
             $form_data = array_map(function() { return ''; }, $form_data);
             $form_data['languages'] = [];
             $form_data['contract_accepted'] = false;
 
         } catch (Exception $e) {
             $pdo->rollBack();
-            $errors['db'] = 'Ошибка при сохранении в БД: ' . $e->getMessage();
+            $errors['db'] = 'Ошибка при сохранении: ' . $e->getMessage();
         }
     }
 }
 
-// Получаем список языков для отображения в форме
-$languages_from_db = [];
-$stmt = $pdo->query("SELECT name FROM language ORDER BY name");
-while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $languages_from_db[] = $row['name'];
-}
+// ========== ПОЛУЧАЕМ ЯЗЫКИ ДЛЯ ФОРМЫ (только при GET или при ошибках POST) ==========
+$languages_from_db = getLanguages();
 if (empty($languages_from_db)) {
-    $languages_from_db = $allowed_languages;
+    $languages_from_db = $allowed_languages;   // запасной список, если таблица пуста
 }
 ?>
 <!DOCTYPE html>
@@ -193,7 +192,6 @@ if (empty($languages_from_db)) {
     <div class="container">
         <h1>Анкета</h1>
 
-        <!-- Блок сообщений об успехе/ошибках -->
         <?php if ($success_message): ?>
             <div class="success"><?= htmlspecialchars($success_message) ?></div>
         <?php endif; ?>
@@ -201,14 +199,13 @@ if (empty($languages_from_db)) {
         <?php if (!empty($errors)): ?>
             <div class="errors">
                 <ul>
-                <?php foreach ($errors as $field => $error): ?>
-                    <li><?= htmlspecialchars($error) ?></li>
-                <?php endforeach; ?>
+                    <?php foreach ($errors as $error): ?>
+                        <li><?= htmlspecialchars($error) ?></li>
+                    <?php endforeach; ?>
                 </ul>
             </div>
         <?php endif; ?>
 
-        <!-- ===== АНКЕТА (форма) ===== -->
         <form method="post" action="">
             <div class="form-group">
                 <label for="full_name">ФИО:</label>
@@ -272,98 +269,10 @@ if (empty($languages_from_db)) {
             </div>
         </form>
 
-        <!-- ===== ЭТАПЫ ВЫПОЛНЕНИЯ ЗАДАНИЯ (оформление как в лабе 2) ===== -->
-
-        <!-- Раздел 1: Подготовка к выполнению работы -->
-        <section class="task">
-            <h2>Подготовка к выполнению работы</h2>
-
-            <!-- 0.PNG – инициализация Git -->
-            <div class="subtask">
-                <h3>Инициализация Git и отправка на GitHub</h3>
-                <div class="description">
-                    <p>На локальном компьютере создан репозиторий, добавлены файлы (скриншоты, index.php, style.css, bd.txt, err.txt) и выполнена отправка на GitHub.</p>
-                </div>
-                <div class="screenshot">
-                    <img src="0.PNG" alt="Git init и push">
-                    <p class="caption">Скриншот 0: Инициализация Git и push</p>
-                </div>
-            </div>
-
-            <!-- 1.PNG – подключение по SSH -->
-            <div class="subtask">
-                <h3>Подключение к учебному серверу</h3>
-                <div class="description">
-                    <p>Через SSH выполнен вход на сервер <code>192.168.199.8</code> под логином <code>u82457</code>.</p>
-                </div>
-                <div class="screenshot">
-                    <img src="1.PNG" alt="SSH подключение">
-                    <p class="caption">Скриншот 1: Подключение к серверу</p>
-                </div>
-            </div>
-
-            <!-- 2.PNG – создание каталога hw3 -->
-            <div class="subtask">
-                <h3>Создание рабочего каталога</h3>
-                <div class="description">
-                    <p>В домашней директории создан каталог <code>~/www/hw3</code>, в который будут помещены файлы лабораторной работы.</p>
-                </div>
-                <div class="screenshot">
-                    <img src="2.PNG" alt="mkdir hw3">
-                    <p class="caption">Скриншот 2: Создание каталога hw3</p>
-                </div>
-            </div>
-
-            <!-- 4.PNG – вход в MySQL -->
-            <div class="subtask">
-                <h3>Подключение к MySQL</h3>
-                <div class="description">
-                    <p>Запущен клиент MySQL для создания таблиц. Использована команда <code>mysql -u u82457 -p</code>.</p>
-                </div>
-                <div class="screenshot">
-                    <img src="4.PNG" alt="MySQL подключение">
-                    <p class="caption">Скриншот 4: Вход в MySQL</p>
-                </div>
-            </div>
-
-            <!-- 5.PNG – создание таблиц и наполнение -->
-            <div class="subtask">
-                <h3>Создание таблиц и заполнение языков</h3>
-                <div class="description">
-                    <p>Созданы три таблицы: <code>application</code>, <code>language</code>, <code>application_language</code> – в соответствии с 3-й нормальной формой. Затем таблица <code>language</code> заполнена списком языков из задания.</p>
-                </div>
-                <div class="screenshot">
-                    <img src="5.PNG" alt="SQL запросы">
-                    <p class="caption">Скриншот 5: Создание таблиц и вставка языков</p>
-                </div>
-            </div>
-
-            <!-- 6.PNG – выход из MySQL -->
-            <div class="subtask">
-                <h3>Выход из MySQL</h3>
-                <div class="description">
-                    <p>После завершения работы с базой данных выполнен выход из клиента MySQL.</p>
-                </div>
-                <div class="screenshot">
-                    <img src="6.PNG" alt="exit">
-                    <p class="caption">Скриншот 6: Выход из MySQL</p>
-                </div>
-            </div>
-
-            <!-- 7.PNG – изменение поля gender и просмотр данных -->
-            <div class="subtask">
-                <h3>Корректировка структуры и проверка сохранённых данных</h3>
-                <div class="description">
-                    <p>Затем выполнена выборка последних записей из таблицы <code>application</code> для проверки успешного сохранения данных. Для удобного просмотра всех сохранённых анкет создана отдельная страница: <a href="view.php" target="_blank">Просмотр сохранённых записей</a>.</p>
-                </div>
-                <div class="screenshot">
-                    <img src="7.PNG" alt="ALTER и SELECT">
-                    <p class="caption">Скриншот 7: Изменение структуры и просмотр записей</p>
-                </div>
-            </div>
-        </section>
-
-       
+        <div class="nav-buttons">
+            <a href="podg.html">📖 Этапы выполнения работы</a>
+            <a href="view.php">📊 Просмотр сохранённых анкет</a>
+        </div>
     </div>
 </body>
 </html>
