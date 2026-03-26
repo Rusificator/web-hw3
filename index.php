@@ -187,6 +187,31 @@ if (empty($languages_from_db)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Задание 3 - Анкета</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+    .nav-buttons {
+        margin-top: 30px;
+        text-align: center;
+        border-top: 1px solid #e0e0e0;
+        padding-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+}
+.nav-buttons a {
+    display: inline-block;
+    background-color: #39e704;
+    color: white;
+    text-decoration: none;
+    padding: 10px 25px;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+.nav-buttons a:hover {
+    background-color: #2ecc71;
+}
+        </style>
 </head>
 <body>
     <div class="container">
